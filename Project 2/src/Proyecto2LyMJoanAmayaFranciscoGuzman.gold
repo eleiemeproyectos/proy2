@@ -1,20 +1,5 @@
-// -----------------------
-// Silvia Takahashi
-// UNIVERSIDAD DE LOS ANDES
-// Codes and decodes
-// Reads a string  of the form dσ:ω
-// where   d in {2,3,5}
-//  σ  in {a,‥,z}
-//  ω in {a,‥z}*
-//   outputs dσ:ω' where  ω' is constructed as follows.  If σ appears in positions p such that p%d = 0 then it is replaced by #
-//   Symbols that appear in positions such that p%d =1 are replaced by the symbol shifted  d  positions
-//      for instance if the symbol is a and d  is 2 then the answer would be c.
-//  ω=σ1‥.σn
-// ω' =ρ1‥ρn
-//   ρi = # if   σi =s and  (i%d) = 0
-//   ρi =  shift( σi, d) if  (i%d) = 1
-//   ρi =   σi  otherwise
-
+//Proyecto de kiwii aka (Joan Sebastian Amaya Bohorquez 202011318) y masatebrits(Francisco José Guzmán Ángel 202012332)
+//
 
 
 using gold.**
@@ -27,8 +12,6 @@ var B
 procedure main(args:String[]) begin
 	var sc:java.util.Scanner(System.$in)
     
-    A = ('a'‥'z')
-    B = ('0'‥'9')
 	coder:=createCoder()
    	deCoder:=createDecoder()
     
@@ -48,12 +31,12 @@ end
 function createCoder():ITransducer begin
 	
 	
-	Q:= {⟨d,s,pos⟩ | d in {3,2,5}, s in ('a'‥'z'),0 <= pos < 5  }  ∪ {3,2,5,"I","E"} ∪ {3,2,5}× ('a'‥'z')
+	Q:= {⟨a,b,c,d,e,f,pos⟩ |a in('a'‥'d'),b in('a'‥'d'),c in('a'‥'d'),d in('a'‥'d'),e in('a'‥'d'),f in('a'‥'d'), 0 <= pos < 4  }  ∪ {"I","E","F"} 
 	
-	Σ :=('a'‥'z')∪{ ':', '2', '3', '5'}
-	Σ´:=Σ∪{ '#'}
+	Σ :=('a'‥'d')∪{'&',' '}
+	Σ´:=Σ∪{ '*'}
 	q₀:= "I"
-	F:=	 {⟨d,s,pos⟩ | d in {3,2,5}, s in ('a'‥'z'),0 <= pos < 5  }
+	F:=	 {"F"}
 
 	return 	GDeterministicTransducer(Q,Σ,Σ´,q₀,F,δ,g,h)
 end
@@ -61,96 +44,280 @@ end
 	
 	
 	
-function δ(state,input) begin
+function δ(q,p) begin
    
-   	if state="I" and input in { '2', '3', '5'}  then return input - '0'
- 	elseif state in {2,3,5} and input in ('a'‥'z') then return ⟨state, input⟩
-  	elseif state in {2,3,5,"I","E"} then return "E"
- 	elseif |state| = 2  and input = ':'   then return ⟨state[0], state[1], 1⟩
-  	elseif |state| = 3 and input in ('a'‥'z') then 
-  		d,s,pos:=state[0], state[1], state[2]
-  		return ⟨d,s,(pos+1)%d⟩
-  	else return "E"
-   	end
+   
+	if p='d' then
+		return "E"
+	elseif q="I" && p!='&' && p!=' ' then
+		a='d'
+		b='d'
+		c='d'
+		d=p
+		e='d'
+		f='d'
+		return ⟨a,b,c,d,e,f,1⟩ 	
+		
+	elseif p='&'  && q!="I" && q!="E"&& q!="F" then
+		a,b,c,d,e,f,pos:=q[0],q[1],q[2],q[3],q[4],q[5],q[6]
+		if pos=3 then
+			pos=0
+			a=d
+			b=e
+			c=f
+		return	⟨a,b,c,d,e,f,pos⟩
+		else
+			return "E"
+		end
+
+	else 
+		return "E"
+	end	
+		
+   
+   
+   	//if state="I" and input in { '2', '3', '5'}  then return input - '0'
+ 	//elseif state in {2,3,5} and input in ('a'‥'z') then return ⟨state, input⟩
+  	//elseif state in {2,3,5,"I","E"} then return "E"
+ 	//elseif |state| = 2  and input = ':'   then return ⟨state[0], state[1], 1⟩
+  	//elseif |state| = 3 and input in ('a'‥'z') then 
+  		//d,s,pos:=state[0], state[1], state[2]
+  		//return ⟨d,s,(pos+1)%d⟩
+  	//else return "E"
+   	//end
 
 end
+// ------
+function δ(⟨a,b,c,d,e,f,pos⟩,p) begin
+   
+   
+	if p='d' then
+		return "E"
+	elseif pos=0 && p!='&' && p!=' ' then
+		m=p
+		return	⟨a,b,c,m,e,f,1⟩
 
+	elseif pos=1 && p!='&' && p!=' 'then
+		m=p
+		return ⟨a,b,c,d,m,f,2⟩
+	elseif pos=2 && p!='&' && p!=' 'then
+		m=p
+		return ⟨a,b,c,d,e,m,3⟩
+	elseif pos=3 && p='&' then
+		pos=0
+		a=d
+		b=e
+		c=f
+		return	⟨a,b,c,d,e,f,pos⟩
+	elseif pos=3 && p=' ' then
+		return "F"	
+	else 
+		return "E"
+	end	
+
+end
 
 
 	
 function h(state,input) begin
    
  
-   	if state="I" and input in { '2', '3', '5'}  then return input
- 	elseif state in {2,3,5} and input in ('a'‥'z') then return input
-  	elseif state in {2,3,5,"I","E"} then return λ
- 	elseif |state| = 2  and input = ':'   then return ":"
-  	elseif |state| = 3 and input in ('a'‥'z') then 
-  	 	d,s,pos:=state[0], state[1], state[2]
-   		if 0 = pos and input =s  then return "#"
-   		elseif pos=1 then return shiftSymbol(input,d)
-   		else return input
-   	end
-   else return λ
-end
+   	//if state="I" and input in { '2', '3', '5'}  then return input
+ 	//elseif state in {2,3,5} and input in ('a'‥'z') then return input
+  	//elseif state in {2,3,5,"I","E"} then return λ
+ 	//elseif |state| = 2  and input = ':'   then return ":"
+  	//elseif |state| = 3 and input in ('a'‥'z') then 
+  	 //	d,s,pos:=state[0], state[1], state[2]
+   	//	if 0 = pos and input =s  then return "#"
+   	//	elseif pos=1 then return shiftSymbol(input,d)
+   	//	else return input
+   	//end
+   return λ
 
 end
 
+function h(⟨a,b,c,d,e,f,pos⟩,p) begin
+	if pos=3 && a=d && b=e && c=f then
+		return '*'
+	elseif pos=3 then
+		return String.valueOf(f)+String.valueOf(e)+String.valueOf(d)
+	else
+		return λ 
 
-
-
-
-function g(s) begin
-	return λ
 end
+end	
+
+
+
+
+function g(q) begin
+	
+	if q!="F" && q!="E" && q!="I" then
+		a,b,c,d,e,f,pos:=q[0],q[1],q[2],q[3],q[4],q[5],q[6]
+		if pos=0 then
+			return String.valueOf('&')
+				else 
+			return λ
+		end
+	elseif q="F" then
+			return String.valueOf(' ')		
+	else
+	
+		return λ
+	end
+end
+
+ 
+
+
 
 function createDecoder():ITransducer begin
-	Q:= {⟨d,s,pos⟩ | d in {3,2,5}, s in ('a'‥'z'),pos in (0‥4)∪{"_"}  }  ∪ {3,2,5,"I","E"} 
-	Σ´ :=('a'‥'z')∪{ ':', '2', '3', '5'}
-	Σ:=Σ´∪{ '#'}
-	q₀:= "I"
-	F:=	 {⟨d,s,pos⟩ | d in {3,2,5}, s in ('a'‥'z'),0 <= pos < 5  }
+	Q:= {⟨a,b,c,d,e,f,pos⟩ |a in('a'‥'d'),b in('a'‥'d'),c in('a'‥'d'),d in('a'‥'d'),e in('a'‥'d'),f in('a'‥'d'), 0 <= pos < 4  }  ∪ {"I1","E1","F1"} 
+	
+	Σ :=('a'‥'d')∪{'&',' ','*'}
+	Σ´:=('a'‥'d')∪{'&',' ','*'}
+	q₀:= "I1"
+	F:=	 {"F1"}
 
-	return 	GDeterministicTransducer(Q,Σ,Σ´,q₀,F,δ1,g,h1)
+	return 	GDeterministicTransducer(Q,Σ,Σ´,q₀,F,δ2,g2,h1)
 end
 
-	
-	
-	
-function δ1(state,input) begin
-  if state="I" and input in { '2', '3', '5'}  then return input - '0'
-  elseif state in {2,3,5} and input in ('a'‥'z') then return ⟨state, input,"_"⟩
-  else return "E"
-  end
+function δ2(q,p) begin
+   if p='d' then
+		return "E1"
+   
+	elseif q="I1"  && p!='&' && p!=' ' && p!='*' then
+		a='d'
+		b='d'
+		c='d'
+		d=p
+		e='d'
+		f='d'
+		return ⟨a,b,c,d,e,f,1⟩ 	
+		
+	elseif p='&'  && q!="I1" && q!="E1"&& q!="F1" then
+		a,b,c,d,e,f,pos:=q[0],q[1],q[2],q[3],q[4],q[5],q[6]
+		if pos=3 then
+			pos=0
+			a=d
+			b=e
+			c=f
+		return	⟨a,b,c,d,e,f,pos⟩
+		end
+	elseif p='*'  && q!="I1" && q!="E1"&& q!="F1" then
+		a,b,c,d,e,f,pos:=q[0],q[1],q[2],q[3],q[4],q[5],q[6]
+			pos=3
+			a=d
+			b=e
+			c=f
+		return	⟨a,b,c,d,e,f,pos⟩	
+
+	else 
+		return "E1"
+	end	
+		
+   
+   
+   	//if state="I" and input in { '2', '3', '5'}  then return input - '0'
+ 	//elseif state in {2,3,5} and input in ('a'‥'z') then return ⟨state, input⟩
+  	//elseif state in {2,3,5,"I","E"} then return "E"
+ 	//elseif |state| = 2  and input = ':'   then return ⟨state[0], state[1], 1⟩
+  	//elseif |state| = 3 and input in ('a'‥'z') then 
+  		//d,s,pos:=state[0], state[1], state[2]
+  		//return ⟨d,s,(pos+1)%d⟩
+  	//else return "E"
+   	//end
+
+
 end
 // ------
-function δ1(⟨d,s,pos⟩,input) begin
-  if pos="_" and input = ':' then return ⟨d,s,1⟩
-  elseif pos="_"  then return "E"
-  elseif input = '#' and pos!=0 then return "E"
-  elseif input = s and pos =0 then return "E"
-  elseif input in ('a'‥'z')∪{'#'} then return ⟨d,s,(pos+1)%d⟩
-  else return "E"
-  end
+function δ2(⟨a,b,c,d,e,f,pos⟩,p) begin
+   
+	if p='d' then
+		return "E1"
+	elseif pos=0 && p!='&' && p!=' ' && p!='*' then
+		m=p
+		return	⟨a,b,c,m,e,f,1⟩
+
+	elseif pos=1 && p!='&' && p!=' ' && p!='*'then
+		m=p
+		return ⟨a,b,c,d,m,f,2⟩
+	elseif pos=2 && p!='&' && p!=' ' && p!='*'then
+		m=p
+		return ⟨a,b,c,d,e,m,3⟩
+	elseif pos=3 && p='&' then
+		pos=0
+		a=d
+		b=e
+		c=f
+		return	⟨a,b,c,d,e,f,pos⟩
+	elseif pos=0 && p='*' then
+			pos=3
+			a=d
+			b=e
+			c=f
+		return	⟨a,b,c,d,e,f,pos⟩		
+	elseif pos=3 && p=' ' && p!='*' then
+		return "F1"	
+	else 
+		return "E1"
+	end	
+
+end
+
+	
+	
+	
+function h1(state,input) begin
+   
+ 
+   	//if state="I" and input in { '2', '3', '5'}  then return input
+ 	//elseif state in {2,3,5} and input in ('a'‥'z') then return input
+  	//elseif state in {2,3,5,"I","E"} then return λ
+ 	//elseif |state| = 2  and input = ':'   then return ":"
+  	//elseif |state| = 3 and input in ('a'‥'z') then 
+  	 //	d,s,pos:=state[0], state[1], state[2]
+   	//	if 0 = pos and input =s  then return "#"
+   	//	elseif pos=1 then return shiftSymbol(input,d)
+   	//	else return input
+   	//end
+   return λ
+
 end
 
 
 
 	
-function h1(state,input) begin 
-  if state="I" and input in { '2', '3', '5'}  then return input-'0' 
-  elseif state in {2,3,5} and input in ('a'‥'z') then return input
-  else return λ
-  end
-end
+function h1(⟨a,b,c,d,e,f,pos⟩,p) begin
+	if pos=3 && p='*' then
+		return String.valueOf(f)+String.valueOf(e)+String.valueOf(d)
+	elseif pos=3  then
+		return String.valueOf(f)+String.valueOf(e)+String.valueOf(d)
+	else
+		return λ 
 
-function h1(⟨d,s,pos⟩,input) begin
- 	if pos="_" and input = ':' then return input
-    elseif input = '#' and pos=0 then return s
- 	elseif input in ('a'‥'z') and pos=1 then return shiftSymbol(input,-d)
- 	elseif input in ('a'‥'z')  then return input
-   	else return λ
-  	end
+end
+end	
+
+
+
+
+function g2(q) begin
+	
+	if q!="F1" && q!="E1" && q!="I1" then
+		a,b,c,d,e,f,pos:=q[0],q[1],q[2],q[3],q[4],q[5],q[6]
+		if pos=0 then
+			return String.valueOf('&')
+		else 
+			return λ
+		end	
+	elseif q="F1" then
+		return String.valueOf(' ')
+	
+	else
+	
+		return λ
+	end
 end
 
 
@@ -171,5 +338,7 @@ end
 	end		
 	return r
 end
+
+
 
 
