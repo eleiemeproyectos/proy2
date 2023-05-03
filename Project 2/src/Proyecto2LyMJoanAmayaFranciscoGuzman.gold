@@ -1,5 +1,6 @@
 //Proyecto de kiwii aka (Joan Sebastian Amaya Bohorquez 202011318) y masatebrits(Francisco José Guzmán Ángel 202012332)
-//
+//Solo presenta un error y es que cuando se ingresa el input debe hacerse con un espacio al final de todo de lo contrario 
+	rechaza la cadena ejemplo "abc&cba&bbb " Note el espacio al final.
 
 
 using gold.**
